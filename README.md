@@ -60,8 +60,8 @@ ERNIE:https://github.com/649453932/Bert-Chinese-Text-Classification-Pytorch
 所以放弃用自己电脑跑的想法吧
 
 使用流程：
-- 运行train_model1.py, 你会得到predict1
-- 运行train_model2.py, 你会得到predict2
+- 运行train_model1.py, train_model2.py得到model1,model2
+- 运行predict1.py, predict2.py
 - 运行predict_final, 汇总predict1和predict2得到最终提交格式的文件
 - 注意！：训练和预测时都需要注意配置相应文件的路径不要出错
 
