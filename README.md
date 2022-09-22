@@ -43,7 +43,7 @@ BERT的输出CLS负责预测conds_op; 其他部分取出CLS，即`CLS0 CLS1...CL
 
 模型的输入为问题+条件列名的形式：`CLS Question SEP cls conds_column SEP`, 长度为128
 
-输出的CLS负责预测`cond_conn_op`，`conds_value`
+输出的CLS负责预测`cond_conn_op`，其他部分预测`conds_value`
 
 其他部分的输出相当于命名实体识别问题（NER），我这里处理得不好，准确率不高主要是这一步的问题，
 因为疫情所以没机会改进了，本项目用的首尾指针标注。我还试过beio，crf等效果都不好。
