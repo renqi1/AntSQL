@@ -61,6 +61,7 @@ label_all_conds_op = []
 best_acc = 0
 total_batch = 0
 
+# 不写验证也可以，当时就是看看效果
 def model_evaluate(model, data_iter):
     model.eval()
     pre_all_sel_col = []
@@ -144,7 +145,8 @@ for epoch in range(5):
             print(epoch_batch+1, '/', len(train_loader), '\t',
                   loss_sel_col.item(), '\t', loss_conds_col.item(), '\t', loss_conds_op.item(), '\t',
                   train_sel_acc, '\t', train_conds_col_acc,  '\t', train_conds_op_acc, '\t', )
-
+            
+        # 因为验证一次有点久，而且前期的模型没必要保存
         if (epoch_batch + 1) % 200 == 0 and total_batch > 0.8*len(train_loader):
             dev_sel_col_acc, dev_conds_col_acc, dev_conds_op_acc = model_evaluate(model1, test_loader)
 
