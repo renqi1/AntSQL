@@ -69,10 +69,7 @@ def model_evaluate(model, data_iter):
     label_all_conds_col = []
     label_all_conds_op = []
     with torch.no_grad():
-        for epoch_batch, (
-                input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col,
-                label_conds_op) in enumerate(
-            data_iter):
+        for epoch_batch, (input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op) in enumerate(data_iter):
             model1.train()
             input_ids = Variable(input_ids).cuda()
             attention_mask = Variable(attention_mask).cuda()
@@ -102,9 +99,7 @@ def model_evaluate(model, data_iter):
 
 for epoch in range(5):
     print('epoch', epoch)
-    for epoch_batch, (
-    input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op) in enumerate(
-            train_loader):
+    for epoch_batch, (input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op) in enumerate(train_loader):
         total_batch += 1
         model1.train()
         input_ids = Variable(input_ids).cuda()
