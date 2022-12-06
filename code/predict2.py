@@ -9,15 +9,14 @@ from torch.autograd import Variable
 
 columns = get_columns()
 test_set_path = '../data/waic_nl2sql_testa_public.jsonl'
-pretain_vocab_path = "../pretain_model/ernie/vocab.txt"
-pretain_config_path = "../pretain_model/ernie/bert_config.json"
-pretain_model_path = "../pretain_model/ernie/pytorch_model.bin"
+pretrain_vocab_path = "../pretrain_model/ernie/vocab.txt"
+pretrain_config_path = "../pretrain_model/ernie/bert_config.json"
+pretrain_model_path = "../pretrain_model/ernie/pytorch_model.bin"
 model2_path = "../my_model/model2_ernie.pkl"
-predict2_save_path = "../predict_result/predict2_ernie.json"      # predict2 according to predict1
+predict2_save_path = "../predict_result/predict2_ernie.json"  # predict2 according to predict1
 predict1_path = "../predict_result/predict1_ernie.json"
 hidden_size = 768
-batch_size = 64
-
+batch_size = 1
 
 # test_examples = ['涨幅最大的板块南方誉隆一年持有期混合a的净值',
 # '华宝消费的净值现回撤快10个',
@@ -25,7 +24,7 @@ batch_size = 64
 # '光大保德信银发商机主题混合型证券投资基金的净值推荐其他好的板块',
 # '短期看好广发睿升c的净值',]
 
-with open(predict1_path , 'r') as f:
+with open(predict1_path, 'r') as f:
     for i, j in enumerate(f):
         if i == 0:
             pre_all_sel_col = json.loads(j)
@@ -39,14 +38,14 @@ Test_examples = []
 for i in range(len(pre_all_conds_col)):
     Test_examples.append([test_examples[i], pre_all_sel_col[i], pre_all_conds_col[i]])
 
-tokenizer = BertTokenizer.from_pretrained(pretain_vocab_path)
+tokenizer = BertTokenizer.from_pretrained(pretrain_vocab_path)
 
 features = convert_examples2(Test_examples, columns, tokenizer, max_length=128, train=False)
 test_dataset = BuildDataSet2(features)
 test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 print('load data finish')
 
-model2 = Bert2(hidden_size=hidden_size, config=pretain_config_path, model=pretain_model_path).cuda()
+model2 = Bert2(hidden_size=hidden_size, config=pretrain_config_path, model=pretrain_model_path).cuda()
 model2.load_state_dict(torch.load(model2_path))
 model2.eval()
 
@@ -67,7 +66,7 @@ for i, (input_ids, attention_mask, token_type_ids) in enumerate(test_loader):
     _, pre_conds_value = torch.topk(out_conds_value, 2, dim=1, largest=True)
     pre_conds_value1 = pre_conds_value[:, 0, :].squeeze(1).cpu().numpy().tolist()
     pre_conds_value2 = pre_conds_value[:, 1, :].squeeze(1).cpu().numpy().tolist()
-    #
+
     # logist, out_conn = model2(input_ids, attention_mask, token_type_ids)
     pre_conn = torch.max(out_conn.data, 1)[1].cpu().numpy()
 
@@ -80,12 +79,6 @@ for i, (input_ids, attention_mask, token_type_ids) in enumerate(test_loader):
     # pre_all_tags.extend(biesos_tags)
 
 print('predict finish')
-
-
-# with open(predict2_save_path, 'w') as f:
-#     f.write(str(pre_all_tags))
-#     f.write('\n')
-#     f.write(str(pre_all_conn))
 
 with open(predict2_save_path, 'w') as f:
     f.write(str(pre_all_conds_value1))
