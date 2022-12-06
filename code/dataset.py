@@ -217,8 +217,8 @@ class BuildDataSet2(torch.utils.data.Dataset):
                     return values
                 values[start[i]] = 1
                 values[start[i]+1: end[i]+1] = 2
-
             return values
+        
     def encoder_beio(self, conds, ques_len=63):
         """
         :param conds: [[col, op, start, end],[...]]
