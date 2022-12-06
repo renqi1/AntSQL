@@ -47,10 +47,6 @@ BERT的输出CLS负责预测conds_op; 其他部分取出CLS，即`CLS0 CLS1...CL
 因为疫情所以没机会改进了，本项目用的首尾指针标注。我还试过beio，crf等效果都不好。
 其实我下一步的想法是下载专门的NER预训练模型作为模型2，哎，可恶的疫情！
 
-- 只用一个模型
-
-当时参考的别人的做法没有考虑太多，其实一个模型也是能直接预测出上面所有结果的，
-不知道效果如何，等我有空重新写一个代码。
 
 ## 模型
 ERNIE:https://github.com/649453932/Bert-Chinese-Text-Classification-Pytorch
