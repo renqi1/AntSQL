@@ -55,7 +55,7 @@ ERNIE:https://github.com/649453932/Bert-Chinese-Text-Classification-Pytorch
 
 ## 使用说明
 
-前言：这个运算量有点大，3090都跑不太动，尤其是模型1，batch size最多只支持24。
+这个运算量有点大，3090都跑不太动，尤其是模型1，batch size最多只支持24。
 所以放弃用自己电脑跑的想法吧
 
 使用流程：
