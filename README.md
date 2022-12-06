@@ -64,7 +64,7 @@ ERNIE:https://github.com/649453932/Bert-Chinese-Text-Classification-Pytorch
 - 运行predict_final, 汇总predict1和predict2得到最终提交格式的文件
 - 注意！：训练和预测时都需要注意配置相应文件的路径不要出错
 
-其他文件说明
+文件说明
 - Bert： 储存两个模型
 - [crf：](https://github.com/kmkurn/pytorch-crf) 条件随机场，效果不好，未使用
 - dataset: 处理数据，构建dataset
