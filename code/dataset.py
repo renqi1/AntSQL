@@ -1,10 +1,8 @@
 import jsonlines
 import numpy as np
-import torch
-import json
-import copy
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, Dataset
 from utils import value_start_end
+
 
 def read_train_set(path):
     """
@@ -23,9 +21,10 @@ def read_train_set(path):
                     cond[2] = start
                     cond.append(end)
             else:
-                conds=None
+                conds = None
             data_list.append([question, sel, conds, cond_conn_op])
     return data_list
+
 
 def read_test_set(path):
     """
@@ -38,27 +37,18 @@ def read_test_set(path):
             data_list.append(question)
     return data_list
 
+
 class InputFeatures(object):
     """
     A single set of features of data.
     """
+
     def __init__(self, input_ids, attention_mask=None, token_type_ids=None, label=None):
         self.input_ids = input_ids
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
         self.label = label
 
-    def __repr__(self):
-        return str(self.to_json_string())
-
-    def to_dict(self):
-        """Serializes this instance to a Python dictionary."""
-        output = copy.deepcopy(self.__dict__)
-        return output
-
-    def to_json_string(self):
-        """Serializes this instance to a JSON string."""
-        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
 
 def convert_examples1(examples, columns_encode, segment_ids, tokenizer, que_length=64, max_length=512, train=True):
     """
@@ -90,6 +80,7 @@ def convert_examples1(examples, columns_encode, segment_ids, tokenizer, que_leng
 
     return features
 
+
 def convert_examples2(examples, columns, tokenizer, que_length=64, max_length=128, train=True):
     """
     :param examples: List [[ question, sel, conds=[[col, op , start, end],...], cond_conn_op],...] if train, else
@@ -103,7 +94,7 @@ def convert_examples2(examples, columns, tokenizer, que_length=64, max_length=12
         if train:
             question = example[0]
             conds = example[2]
-            cond_conn_op =example[3]
+            cond_conn_op = example[3]
             label = [conds, cond_conn_op]
             if conds is None:
                 cond_column_name = None
@@ -115,15 +106,16 @@ def convert_examples2(examples, columns, tokenizer, que_length=64, max_length=12
             label = 'test'
 
         inputs = tokenizer.encode_plus(question, add_special_tokens=True, max_length=que_length)
-        input_ids, token_type_ids, attention_mask = inputs["input_ids"], inputs["token_type_ids"], inputs["attention_mask"]
-
+        input_ids, token_type_ids, attention_mask = inputs["input_ids"], inputs["token_type_ids"], inputs[
+            "attention_mask"]
 
         if cond_column_name is not None:
             column_name_encode = tokenizer.encode_plus(cond_column_name)
-            input_ids2, token_type_ids2, attention_mask2 = column_name_encode["input_ids"], column_name_encode["token_type_ids"], column_name_encode["attention_mask"]
+            input_ids2, token_type_ids2, attention_mask2 = column_name_encode["input_ids"], column_name_encode[
+                "token_type_ids"], column_name_encode["attention_mask"]
             input_ids = input_ids + input_ids2
             attention_mask = attention_mask + attention_mask2
-            token_type_ids = token_type_ids + [1]*len(token_type_ids2)
+            token_type_ids = token_type_ids + [1] * len(token_type_ids2)
 
         # Zero-pad up to the sequence length.
         padding_length = max_length - len(input_ids)
@@ -135,7 +127,8 @@ def convert_examples2(examples, columns, tokenizer, que_length=64, max_length=12
         features.append(InputFeatures(input_ids, attention_mask, token_type_ids, label))
     return features
 
-class BuildDataSet1(torch.utils.data.Dataset):
+
+class BuildDataSet1(Dataset):
     def __init__(self, features):
         self.features = features
 
@@ -149,7 +142,7 @@ class BuildDataSet1(torch.utils.data.Dataset):
             label_conn = np.array(feature.label[2])
             label_conds = np.array(feature.label[1])
             if label_conds.any() == None:
-                label_conds = np.array([[52,7,0,0]])
+                label_conds = np.array([[52, 7, 0, 0]])
             label_conds_col = np.array(label_conds[0][0])
             label_conds_op = np.array(label_conds[0][1])
             return input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op
@@ -159,7 +152,8 @@ class BuildDataSet1(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.features)
 
-class BuildDataSet2(torch.utils.data.Dataset):
+
+class BuildDataSet2(Dataset):
     def __init__(self, features):
         self.features = features
 
@@ -180,13 +174,12 @@ class BuildDataSet2(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.features)
 
-
     def encoder_se(self, conds, ques_len=63):
         """
         :param conds: [[col, op, start, end],[...]]
         :return  values: 63 * 2(start, end)
         """
-        values = np.zeros((ques_len,2))
+        values = np.zeros((ques_len, 2))
         values = np.float32(values)
         if conds.any() == None:
             return values
@@ -216,15 +209,15 @@ class BuildDataSet2(torch.utils.data.Dataset):
                 if start[i] == 0 and end[i] == 0:
                     return values
                 values[start[i]] = 1
-                values[start[i]+1: end[i]+1] = 2
+                values[start[i] + 1: end[i] + 1] = 2
             return values
-        
+
     def encoder_beio(self, conds, ques_len=63):
         """
         :param conds: [[col, op, start, end],[...]]
         :return  values: 63 * 4(begin, end , in ,out)
         """
-        values = np.zeros((ques_len,4))
+        values = np.zeros((ques_len, 4))
         values[:, 3] = 1
         values = np.float32(values)
         if conds.any() == None:
@@ -237,8 +230,7 @@ class BuildDataSet2(torch.utils.data.Dataset):
                     return values
                 values[start[i], 0] = 1
                 values[end[i], 1] = 1
-                values[start[i]+1:end[i], 2] = 1
+                values[start[i] + 1:end[i], 2] = 1
             values[:, 3] = 1
             values[:, 3] = values[:, 3] - values[:, 2] - values[:, 1] - values[:, 0]
             return values
-
