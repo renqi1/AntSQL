@@ -39,9 +39,7 @@ test_size = len(train_dataset) - train_size
 train_set, val_set = random_split(train_dataset, [train_size, test_size])
 train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False)
-
-# train_loader = DataLoader(train_dataset, batch_size=24, shuffle=True)
-print('dataloder finish')
+print('load data finish')
 
 clsidx = get_cls_idx(columns)
 index = torch.LongTensor(clsidx).cuda()
