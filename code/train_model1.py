@@ -11,9 +11,9 @@ from sklearn import metrics
 columns = get_columns()
 
 train_set_path = "../data/waic_nl2sql_train.jsonl"
-pretain_vocab_path = "../pretain_model/ernie/vocab.txt"
-pretain_config_path = "../pretain_model/ernie/bert_config.json"
-pretain_model_path = "../pretain_model/ernie/pytorch_model.bin"
+pretrain_vocab_path = "../pretrain_model/ernie/vocab.txt"
+pretrain_config_path = "../pretrain_model/ernie/bert_config.json"
+pretrain_model_path = "../pretrain_model/ernie/pytorch_model.bin"
 model1_save_path = "../my_model/model1_ernie.pkl"
 hidden_size = 768
 batch_size = 24
@@ -29,8 +29,8 @@ print('train examples got')
 #  ['光大保德信银发商机主题混合型证券投资基金的净值推荐其他好的板块', 13, [[1, 4, 0, 20]], 0],
 #  ['短期看好广发睿升c的净值', 13, [[1, 4, 4, 9]], 0]]
 
-tokenizer = BertTokenizer.from_pretrained(pretain_vocab_path)
-columns_encode, columns_segment= encode_columns(columns, tokenizer)
+tokenizer = BertTokenizer.from_pretrained(pretrain_vocab_path)
+columns_encode, columns_segment = encode_columns(columns, tokenizer)
 features = convert_examples1(train_examples, columns_encode, columns_segment, tokenizer, que_length=64, max_length=512)
 train_dataset = BuildDataSet1(features)
 
@@ -45,7 +45,7 @@ print('dataloder finish')
 
 clsidx = get_cls_idx(columns)
 index = torch.LongTensor(clsidx).cuda()
-model1 = Bert1(index=index, hidden_size=hidden_size, config=pretain_config_path, model=pretain_model_path).cuda()
+model1 = Bert1(index=index, hidden_size=hidden_size, config=pretrain_config_path, model=pretrain_model_path).cuda()
 
 loss_function = torch.nn.CrossEntropyLoss()
 optimizer = optim.Adam(model1.parameters(), lr=learning_rate)
@@ -61,7 +61,7 @@ label_all_conds_op = []
 best_acc = 0
 total_batch = 0
 
-# 不写验证也可以，当时就是看看效果
+
 def model_evaluate(model, data_iter):
     model.eval()
     pre_all_sel_col = []
@@ -72,13 +72,13 @@ def model_evaluate(model, data_iter):
     label_all_conds_op = []
     with torch.no_grad():
         for epoch_batch, (
-        input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op) in enumerate(
-                data_iter):
+                input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col,
+                label_conds_op) in enumerate(
+            data_iter):
             model1.train()
             input_ids = Variable(input_ids).cuda()
             attention_mask = Variable(attention_mask).cuda()
             token_type_ids = Variable(token_type_ids).cuda()
-
 
             out_sel_col, out_conds_col, out_conds_op = model1(input_ids, attention_mask, token_type_ids)
 
@@ -104,7 +104,9 @@ def model_evaluate(model, data_iter):
 
 for epoch in range(5):
     print('epoch', epoch)
-    for epoch_batch, (input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op) in enumerate(train_loader):
+    for epoch_batch, (
+    input_ids, attention_mask, token_type_ids, label_sel, label_conn, label_conds_col, label_conds_op) in enumerate(
+            train_loader):
         total_batch += 1
         model1.train()
         input_ids = Variable(input_ids).cuda()
@@ -120,7 +122,7 @@ for epoch in range(5):
         loss_conds_col = loss_function(out_conds_col, label_conds_col_)
         loss_conds_op = loss_function(out_conds_op, label_conds_op_)
 
-        total_loss = 2*loss_sel_col + 10*loss_conds_col + 0.5*loss_conds_op
+        total_loss = 2 * loss_sel_col + 10 * loss_conds_col + 0.5 * loss_conds_op
         optimizer.zero_grad()
         total_loss.backward()
         optimizer.step()
@@ -142,12 +144,11 @@ for epoch in range(5):
             train_conds_col_acc = metrics.accuracy_score(pre_all_conds_col, label_all_conds_col)
             train_conds_op_acc = metrics.accuracy_score(pre_all_conds_op, label_all_conds_op)
 
-            print(epoch_batch+1, '/', len(train_loader), '\t',
+            print(epoch_batch + 1, '/', len(train_loader), '\t',
                   loss_sel_col.item(), '\t', loss_conds_col.item(), '\t', loss_conds_op.item(), '\t',
-                  train_sel_acc, '\t', train_conds_col_acc,  '\t', train_conds_op_acc, '\t', )
-            
-        # 因为验证一次有点久，而且前期的模型没必要保存
-        if (epoch_batch + 1) % 200 == 0 and total_batch > 0.8*len(train_loader):
+                  train_sel_acc, '\t', train_conds_col_acc, '\t', train_conds_op_acc, '\t', )
+
+        if (epoch_batch + 1) % 200 == 0 and total_batch > 0.8 * len(train_loader):
             dev_sel_col_acc, dev_conds_col_acc, dev_conds_op_acc = model_evaluate(model1, test_loader)
 
             if dev_conds_col_acc > best_acc:
@@ -167,5 +168,3 @@ for epoch in range(5):
             label_all_conds_op = []
 
     torch.save(model1.state_dict(), 'epoch_model1_ernie.pkl')
-
-
