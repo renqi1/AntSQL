@@ -70,11 +70,11 @@ class Bert2(nn.Module):
         conds_value = last_hidden_state[:, 1:64, :]
         out_conds_value = self.classifier_conds_value(conds_value)
 
-        if labels is not None:
-            logits = self.classifier_crf(conds_value)
-            attention_mask = attention_mask[:, 1:64]
-            labels = torch.LongTensor(labels.numpy())
-            loss = self.crf(emissions=logits, tags=labels, mask=attention_mask)
-            return -1 * loss, logits  # (loss), scores
+#         if labels is not None:  # (if use encoder_crf)
+#             logits = self.classifier_crf(conds_value)
+#             attention_mask = attention_mask[:, 1:64]
+#             labels = torch.LongTensor(labels.numpy())
+#             loss = self.crf(emissions=logits, tags=labels, mask=attention_mask)
+#             return -1 * loss, logits, out_conn_op  # loss, out_conds_value, out_conn_op
 
         return out_conds_value, out_conn_op
