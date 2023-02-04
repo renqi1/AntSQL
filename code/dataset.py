@@ -196,7 +196,7 @@ class BuildDataSet2(Dataset):
     def encoder_crf(self, conds, ques_len=63):
         """
         :param conds: [[col, op, start, end],[...]]
-        :return  values: ques_len
+        :return  values: 63*1(begin：1, in：2 ,out：0)
         """
         values = np.zeros(ques_len)
         values = np.float32(values)
