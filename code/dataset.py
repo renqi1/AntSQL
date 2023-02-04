@@ -42,13 +42,24 @@ class InputFeatures(object):
     """
     A single set of features of data.
     """
-
     def __init__(self, input_ids, attention_mask=None, token_type_ids=None, label=None):
         self.input_ids = input_ids
         self.attention_mask = attention_mask
         self.token_type_ids = token_type_ids
         self.label = label
 
+    def __repr__(self):
+        return str(self.to_json_string())
+
+    def to_dict(self):
+        """Serializes this instance to a Python dictionary."""
+        output = copy.deepcopy(self.__dict__)
+        return output
+
+    def to_json_string(self):
+        """Serializes this instance to a JSON string."""
+        return json.dumps(self.to_dict(), indent=2, sort_keys=True) + "\n"
+    
 
 def convert_examples1(examples, columns_encode, segment_ids, tokenizer, que_length=64, max_length=512, train=True):
     """
