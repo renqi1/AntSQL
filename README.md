@@ -53,6 +53,12 @@ ERNIE:https://github.com/649453932/Bert-Chinese-Text-Classification-Pytorch
 
 我选的是一个基于Bert的分类任务模型，可能这个模型不适合本项目，读者可选其他模型试试
 
+我的模型：
+
+链接：https://pan.baidu.com/s/179dfUGF3vH0OFYlySbTNow?pwd=a6tr 
+
+提取码：a6tr
+
 ## 使用说明
 
 这个运算量有点大，3090都跑不太动，尤其是模型1，batch size最多只支持24。
